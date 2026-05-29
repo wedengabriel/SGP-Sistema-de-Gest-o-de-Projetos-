@@ -5,7 +5,8 @@ from datetime import date, time
 
 from backend.database import SessionLocal
 from backend.models.ordem_servico import OrdemServico
-
+from backend.models.os_tecnico import OSTecnico
+from backend.models.tecnico import Tecnico
 
 router = APIRouter()
 
@@ -65,3 +66,30 @@ def criar_ordem_servico(os: OrdemServicoCreate, db: Session = Depends(get_db)):
 @router.get("/ordens-servico")
 def listar_ordens_servico(db: Session = Depends(get_db)):
     return db.query(OrdemServico).all()
+
+@router.get("/ordens-servico/{os_id}/tecnicos")
+def listar_tecnicos_os(
+    os_id: int,
+    db: Session = Depends(get_db)
+):
+
+    registros = db.query(OSTecnico).filter(
+        OSTecnico.ordem_servico_id == os_id
+    ).all()
+
+    resultado = []
+
+    for registro in registros:
+
+        tecnico = db.query(Tecnico).filter(
+            Tecnico.id == registro.tecnico_id
+        ).first()
+
+        resultado.append({
+            "id": registro.id,
+            "tecnico": tecnico.nome,
+            "horas_trabalhadas": registro.horas_trabalhadas,
+            "valor_total": registro.valor_total
+        })
+
+    return resultado
