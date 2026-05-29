@@ -675,6 +675,34 @@ if opcao == "Cadastrar Material":
                 list(opcoes_projetos.keys())
             )
 
+            projeto_id = opcoes_projetos[projeto_selecionado]
+
+            response_os = requests.get(f"{API_URL}/ordens-servico")
+            ordens_servico = response_os.json() if response_os.status_code == 200 else []
+
+            ordens_filtradas = [
+                os for os in ordens_servico
+                if os["projeto_id"] == projeto_id
+            ]
+
+            if ordens_filtradas:
+                opcoes_os = {
+                    f"OS {os['id']} - {os['data_servico']}": os["id"]
+                    for os in ordens_filtradas
+                }
+
+                os_selecionada = st.selectbox(
+                    "Ordem de Serviço",
+                    list(opcoes_os.keys()),
+                    key="material_os"
+                )
+
+                ordem_servico_id = opcoes_os[os_selecionada]
+
+            else:
+                st.warning("Nenhuma OS cadastrada para este projeto.")
+                st.stop()
+
             data_compra = st.date_input("Data da Compra")
 
             item = st.text_input("Material")
@@ -715,7 +743,8 @@ if opcao == "Cadastrar Material":
                 else:
 
                     dados_material = {
-                        "projeto_id": opcoes_projetos[projeto_selecionado],
+                        "projeto_id": projeto_id,
+                        "ordem_servico_id": ordem_servico_id,
                         "data_compra": str(data_compra),
                         "item": item,
                         "quantidade": quantidade,

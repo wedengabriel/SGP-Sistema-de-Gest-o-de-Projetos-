@@ -7,9 +7,7 @@ from backend.database import SessionLocal
 from backend.models.material import Material
 from backend.models.projeto import Projeto
 
-
 router = APIRouter()
-
 
 class MaterialCreate(BaseModel):
     projeto_id: int
@@ -17,7 +15,7 @@ class MaterialCreate(BaseModel):
     item: str
     quantidade: float
     valor_unitario: float
-
+    ordem_servico_id: int | None = None
 
 def get_db():
     db = SessionLocal()
@@ -25,7 +23,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
 
 @router.post("/materiais")
 def criar_material(material: MaterialCreate, db: Session = Depends(get_db)):
@@ -38,6 +35,7 @@ def criar_material(material: MaterialCreate, db: Session = Depends(get_db)):
 
     novo_material = Material(
         projeto_id=material.projeto_id,
+        ordem_servico_id=material.ordem_servico_id,
         data_compra=material.data_compra,
         item=material.item,
         quantidade=material.quantidade,
